@@ -27,21 +27,21 @@ para testar se deu certo
 
 
 
-    huffman-algorithm/
-├── src/
-│   └── Compressor/
-│       ├── compressor.cpp      # Implementação do compressor
-│       ├── compressor.hpp      # Interface do compressor
-│       ├── huffman_tree.cpp    # Implementação da árvore de Huffman
-│       ├── huffman_tree.hpp    # Interface da árvore de Huffman
-│       ├── file_reader.hpp     # Utilitários de leitura de arquivo
-│       ├── main.cpp            # Programa principal
-│       ├── Tabela_Base.txt     # Tabela de frequências padrão
-│       └── teste.cpp           # Arquivo de teste
-├── outputs/                    # Arquivos comprimidos gerados
-├── obj/                       # Arquivos objeto (gerados)
-├── bin/                       # Executável (gerado)
-└── makefile                   # Script de compilação
+        huffman-algorithm/
+    ├── src/
+    │   └── Compressor/
+    │       ├── compressor.cpp      # Implementação do compressor
+    │       ├── compressor.hpp      # Interface do compressor
+    │       ├── huffman_tree.cpp    # Implementação da árvore de Huffman
+    │       ├── huffman_tree.hpp    # Interface da árvore de Huffman
+    │       ├── file_reader.hpp     # Utilitários de leitura de arquivo
+    │       ├── main.cpp            # Programa principal
+    │       ├── Tabela_Base.txt     # Tabela de frequências padrão
+    │       └── teste.cpp           # Arquivo de teste
+    ├── outputs/                    # Arquivos comprimidos gerados
+    ├── obj/                       # Arquivos objeto (gerados)
+    ├── bin/                       # Executável (gerado)
+    └── makefile                   # Script de compilação
 
 
 # Exemplo de uso 
