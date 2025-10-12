@@ -15,12 +15,12 @@ int main(int argc, char* argv[]) {
 
     verifies_path(file_path, input_list);
 
-    std::unordered_map<std::string, int> keywords_map = create_unordered_map_from_file("../inputs/cpp-keywords.txt");
-    std::unordered_map<std::string, int> chars_map = create_unordered_map_from_file("../inputs/ascii_chars.txt");
+    std::unordered_map<std::string, int> keywords_map = create_unordered_map_from_file("../../inputs/cpp-keywords.txt");
+    std::unordered_map<std::string, int> chars_map = create_unordered_map_from_file("../../inputs/ascii_chars.txt");
 
     count_frequencies_in_various_files(input_list, keywords_map, chars_map);
 
-    create_frequency_table("../outputs/frequency-table.txt", keywords_map, chars_map);
+    create_frequency_table("../../outputs/frequency-table.txt", keywords_map, chars_map);
 
     std::cout << "Frequency table created sucessfully in file \"frequency-table.txt\"\n";
 

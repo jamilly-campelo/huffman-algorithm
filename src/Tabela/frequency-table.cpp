@@ -135,11 +135,11 @@ void create_frequency_table(const std::string path, const std::unordered_map<std
     std::ofstream file(path);
 
     for (const auto& [word, count] : chars_map) {
-        file << word << " " << count << '\n';
+        file << word << ":" << count << '\n';
     }
 
     for (const auto& [word, count] : keywords_map) {
-        file << word << " " << count << '\n';
+        file << word << ":" << count << '\n';
     }
 
     file.close();

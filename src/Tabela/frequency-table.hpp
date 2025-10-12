@@ -16,6 +16,8 @@ std::unordered_map<std::string, int> create_unordered_map_from_file(std::string 
 
 std::vector<std::string> line_parser(const std::string str);
 
+void count_frequencies_in_file(const std::string path, std::unordered_map<std::string, int>& keywords_map, std::unordered_map<std::string, int>& chars_map);
+
 void count_frequencies_in_various_files(const std::vector<std::string> input_list, std::unordered_map<std::string, int>& keywords_map, std::unordered_map<std::string, int>& chars_map);
 
 void create_frequency_table(const std::string path, const std::unordered_map<std::string, int>& keywords_map, const std::unordered_map<std::string, int>& chars_map);

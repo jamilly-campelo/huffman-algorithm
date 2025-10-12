@@ -68,7 +68,7 @@ struct HuffmanNode {
 class HuffmanTree {
 private:
   std::shared_ptr<HuffmanNode> root; ///< Raiz da árvore de Huffman
-  std::unordered_map<char, std::string>
+  std::unordered_map<std::string, std::string>
       codeTable; ///< Tabela de codificação caractere->código
 
   /**
@@ -95,7 +95,7 @@ public:
    *
    * @param freq Mapa não ordenado contendo caracteres e suas frequências
    */
-  HuffmanTree(const std::unordered_map<char, int> &freq);
+  HuffmanTree(const std::unordered_map<std::string, int> &freq);
 
   /**
    * @brief Retorna a tabela de codificação gerada pela árvore
@@ -106,5 +106,5 @@ public:
    * @note Os códigos são strings contendo apenas '0' e '1'
    * @note Caracteres não presentes na árvore não estarão na tabela
    */
-  std::unordered_map<char, std::string> getCodeTable() const;
+  std::unordered_map<std::string, std::string> getCodeTable() const;
 };

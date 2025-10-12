@@ -2,7 +2,6 @@
  * @file huffman_tree.cpp
  * @brief Implementação da árvore de Huffman para compressão de dados
  */
-
 #include "huffman_tree.hpp"
 #include <queue>
 
@@ -50,7 +49,7 @@ struct NodeCompare {
  * Para frequências: {'a': 5, 'b': 9, 'c': 12, 'd': 13, 'e': 16, 'f': 45}
  * A árvore será construída combinando os nós de menor frequência primeiro
  */
-HuffmanTree::HuffmanTree(const std::unordered_map<char, int> &freq) {
+HuffmanTree::HuffmanTree(const std::unordered_map<std::string, int> &freq) {
   // Fila de prioridade (min-heap) para construir a árvore de Huffman
   std::priority_queue<std::shared_ptr<HuffmanNode>,
                       std::vector<std::shared_ptr<HuffmanNode>>, NodeCompare>
@@ -61,8 +60,7 @@ HuffmanTree::HuffmanTree(const std::unordered_map<char, int> &freq) {
     pq.push(std::make_shared<HuffmanNode>(sym, f));
   }
 
-  // Constrói a árvore combinando os dois nós de menor frequência até restar
-  // apenas um
+  // Constrói a árvore combinando os dois nós de menor frequência até restar apenas um
   while (pq.size() > 1) {
     // Remove os dois nós com menor frequência
     auto left = pq.top();
@@ -121,7 +119,7 @@ void HuffmanTree::buildCodes(std::shared_ptr<HuffmanNode> node,
  * A tabela mapeia cada caractere para sua representação binária na árvore.
  * Caracteres mais frequentes têm códigos mais curtos.
  *
- * @return std::unordered_map<char, std::string> Tabela de codificação
+ * @return std::unordered_map<std::string, std::string> Tabela de codificação
  *
  * @note A tabela é gerada durante a construção da árvore
  * @note O código é uma string de '0's e '1's
@@ -131,6 +129,6 @@ void HuffmanTree::buildCodes(std::shared_ptr<HuffmanNode> node,
  * Para a árvore exemplo, a tabela pode conter:
  * {'a': "1100", 'b': "1101", 'c': "100", 'd': "101", 'e': "111", 'f': "0"}
  */
-std::unordered_map<char, std::string> HuffmanTree::getCodeTable() const {
+std::unordered_map<std::string, std::string> HuffmanTree::getCodeTable() const {
   return codeTable;
 }

@@ -63,16 +63,7 @@ private:
    * @param tablePath Caminho para o arquivo contendo a tabela de frequências
    * @return std::unordered_map<char, int> Mapa contendo os caracteres e suas
    * respectivas frequências
-   *
-   * @throws std::runtime_error Se o arquivo especificado não puder ser aberto
-   *
-   * @note Linhas com formato inválido são silenciosamente ignoradas
-   * @example
-   * a:150
-   * b:80
-   * # Isto é um comentário
-   * c:30
    */
-  std::unordered_map<char, int>
+  std::unordered_map<std::string, int>
   loadFrequencyTable(const std::string &tablePath);
 };

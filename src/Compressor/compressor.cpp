@@ -2,24 +2,24 @@
  * @file compressor.cpp
  * @brief Implementação das funções de compressão usando algoritmo de Huffman
  */
-
 #include "compressor.hpp"
+#include "../Tabela/frequency-table.hpp"
 #include <bitset>
 
 /**
  * @brief Carrega uma tabela de frequências a partir de um arquivo
  *
  * O arquivo deve estar no formato "caractere:frequência" com uma entrada por
- * linha. Linhas vazias ou começando com '#' são ignoradas.
+ * linha. Linhas vazias são ignoradas.
  *
  * @param tablePath Caminho para o arquivo contendo a tabela de frequências
- * @return std::unordered_map<char, int> Mapa com os caracteres e suas
+ * @return std::unordered_map<std::string, int> Mapa com os símbolos e suas
  * frequências
  * @throws std::runtime_error Se não for possível abrir o arquivo da tabela
  */
-std::unordered_map<char, int>
+std::unordered_map<std::string, int>
 Compressor::loadFrequencyTable(const std::string &tablePath) {
-  std::unordered_map<char, int> freq;
+  std::unordered_map<std::string, int> freq;
   std::ifstream tableFile(tablePath);
 
   // Verifica se o arquivo foi aberto com sucesso
@@ -30,39 +30,25 @@ Compressor::loadFrequencyTable(const std::string &tablePath) {
   std::string line;
   // Processa cada linha do arquivo
   while (std::getline(tableFile, line)) {
-    // Ignora linhas vazias ou comentários
-    if (line.empty() or line[0] == '#')
-      continue;
+    // Ignora linhas vazias
+    if (line.empty()) continue;
 
-    // Remove espaços em branco do início e fim da linha
-    line.erase(0, line.find_first_not_of(" \t\r\n"));
-    line.erase(line.find_last_not_of(" \t\r\n") + 1);
-
-    if (line.empty())
-      continue;
-
+    size_t sep;
     // Encontra o separador ':' entre caractere e frequência
-    size_t sep = line.find(':');
-    if (sep == std::string::npos)
-      continue;
+    for (int i = line.size() - 1; i >= 0; i--) {
+      if (line[i] == ':') {
+        sep = i;
+        break;
+      }
+    }
 
     // Divide a linha em símbolo e frequência
     std::string symbolStr = line.substr(0, sep);
     std::string freqStr = line.substr(sep + 1);
 
-    try {
-      // Limpa espaços da string de frequência
-      freqStr.erase(0, freqStr.find_first_not_of(" \t\r\n"));
-      freqStr.erase(freqStr.find_last_not_of(" \t\r\n") + 1);
-
-      // Converte e armazena os valores
-      int count = std::stoi(freqStr);
-      char symbol = symbolStr[0];
-      freq[symbol] = count;
-    } catch (...) {
-      // Ignora linhas inválidas sem interromper o carregamento
-      continue;
-    }
+    // Converte e armazena os valores
+    int count = std::stoi(freqStr);
+    freq[symbolStr] = count;
   }
 
   tableFile.close();
@@ -85,25 +71,24 @@ Compressor::loadFrequencyTable(const std::string &tablePath) {
 void Compressor::compress(const std::string &inputFile,
                           const std::string &outputFile,
                           const std::string &tablePath) {
-  std::unordered_map<char, int> freq;
+  std::unordered_map<std::string, int> freq;
 
   // Decide de onde vem a tabela de frequências
   if (not tablePath.empty()) {
-    // Tenta carregar tabela externa se fornecida
-    try {
-      std::cout << "Carregando tabela externa: " << tablePath << std::endl;
-      freq = loadFrequencyTable(tablePath);
-    } catch (...) {
-      std::cerr << "Erro ao ler tabela externa" << std::endl;
-    }
+    std::cout << "Carregando tabela externa: " << tablePath << std::endl;
+    freq = loadFrequencyTable(tablePath);
   } else {
     // Caso não haja tabela externa, gera automaticamente
     std::cout << "Gerando tabela automaticamente..." << std::endl;
-    // falta colocara aqui boy caso vc queira criar esse caso aqui
-  }
-  
-  if (freq.empty()) { //verifica se esta vazia 
-    throw std::runtime_error("Tabela de frequências vazia!");
+    
+    std::unordered_map<std::string, int> keywords_map = create_unordered_map_from_file("../../inputs/cpp-keywords.txt");
+    std::unordered_map<std::string, int> chars_map = create_unordered_map_from_file("../../inputs/ascii_chars.txt");
+
+    count_frequencies_in_file(inputFile, keywords_map, chars_map);
+
+    create_frequency_table("../../outputs/frequency-table.txt", keywords_map, chars_map);
+
+    std::cout << "Frequency table created sucessfully in file \"frequency-table.txt\"\n";
   }
 
   // Cria a árvore de Huffman a partir das frequências
@@ -116,17 +101,6 @@ void Compressor::compress(const std::string &inputFile,
 
   if (not in.is_open() or not out.is_open())
     throw std::runtime_error("Erro ao abrir arquivos para compressão.");
-
-  // Escreve a tabela no início do arquivo .huf
-  // Primeiro escreve o tamanho da tabela (número de entradas)
-  uint32_t tableSize = freq.size();
-  out.write(reinterpret_cast<char *>(&tableSize), sizeof(tableSize));
-
-  // Escreve cada entrada da tabela (caractere + frequência)
-  for (auto &[symbol, count] : freq) {
-    out.put(symbol);
-    out.write(reinterpret_cast<char *>(&count), sizeof(count));
-  }
 
   // Codifica os dados do arquivo de entrada
   std::string buffer; // Buffer para acumular bits antes de escrever em bytes
