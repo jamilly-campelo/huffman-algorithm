@@ -3,57 +3,13 @@
  * @brief Implementação das funções de compressão usando algoritmo de Huffman
  */
 #include "compressor.hpp"
+#include "huffman_tree.hpp"
 #include "../Tabela/frequency-table.hpp"
 #include <bitset>
-
-/**
- * @brief Carrega uma tabela de frequências a partir de um arquivo
- *
- * O arquivo deve estar no formato "caractere:frequência" com uma entrada por
- * linha. Linhas vazias são ignoradas.
- *
- * @param tablePath Caminho para o arquivo contendo a tabela de frequências
- * @return std::unordered_map<std::string, int> Mapa com os símbolos e suas
- * frequências
- * @throws std::runtime_error Se não for possível abrir o arquivo da tabela
- */
-std::unordered_map<std::string, int>
-Compressor::loadFrequencyTable(const std::string &tablePath) {
-  std::unordered_map<std::string, int> freq;
-  std::ifstream tableFile(tablePath);
-
-  // Verifica se o arquivo foi aberto com sucesso
-  if (!tableFile.is_open()) {
-    throw std::runtime_error("Erro ao abrir tabela: " + tablePath);
-  }
-
-  std::string line;
-  // Processa cada linha do arquivo
-  while (std::getline(tableFile, line)) {
-    // Ignora linhas vazias
-    if (line.empty()) continue;
-
-    size_t sep;
-    // Encontra o separador ':' entre caractere e frequência
-    for (int i = line.size() - 1; i >= 0; i--) {
-      if (line[i] == ':') {
-        sep = i;
-        break;
-      }
-    }
-
-    // Divide a linha em símbolo e frequência
-    std::string symbolStr = line.substr(0, sep);
-    std::string freqStr = line.substr(sep + 1);
-
-    // Converte e armazena os valores
-    int count = std::stoi(freqStr);
-    freq[symbolStr] = count;
-  }
-
-  tableFile.close();
-  return freq;
-}
+#include <vector>
+#include <algorithm>
+#include <sstream>
+#include <iterator>
 
 /**
  * @brief Comprime um arquivo usando codificação de Huffman
@@ -71,47 +27,62 @@ Compressor::loadFrequencyTable(const std::string &tablePath) {
 void Compressor::compress(const std::string &inputFile,
                           const std::string &outputFile,
                           const std::string &tablePath) {
-  std::unordered_map<std::string, int> freq;
-
-  // Decide de onde vem a tabela de frequências
-  if (not tablePath.empty()) {
-    std::cout << "Carregando tabela externa: " << tablePath << std::endl;
-    freq = loadFrequencyTable(tablePath);
-  } else {
-    // Caso não haja tabela externa, gera automaticamente
-    std::cout << "Gerando tabela automaticamente..." << std::endl;
-    
-    std::unordered_map<std::string, int> keywords_map = create_unordered_map_from_file("../../inputs/cpp-keywords.txt");
-    std::unordered_map<std::string, int> chars_map = create_unordered_map_from_file("../../inputs/ascii_chars.txt");
-
-    count_frequencies_in_file(inputFile, keywords_map, chars_map);
-
-    create_frequency_table("../../outputs/frequency-table.txt", keywords_map, chars_map);
-
-    std::cout << "Frequency table created sucessfully in file \"frequency-table.txt\"\n";
-  }
-
-  // Cria a árvore de Huffman a partir das frequências
-  HuffmanTree tree(freq);
+  HuffmanTree tree(tablePath);
   auto codeTable = tree.getCodeTable();
-
+  
   // Abre os arquivos de entrada e saída
-  std::ifstream in(inputFile, std::ios::binary);
+  std::ifstream in(inputFile);
   std::ofstream out(outputFile, std::ios::binary);
+  // std::ofstream out(outputFile);
 
   if (not in.is_open() or not out.is_open())
     throw std::runtime_error("Erro ao abrir arquivos para compressão.");
 
-  // Codifica os dados do arquivo de entrada
-  std::string buffer; // Buffer para acumular bits antes de escrever em bytes
-  char c;
+  // Lê todo o conteúdo do arquivo para a memória
+  std::stringstream file_buffer;
+  file_buffer << in.rdbuf();
+  std::string file_content = file_buffer.str();
+  in.close();
 
-  // Lê cada caractere do arquivo de entrada
-  while (in.get(c)) {
-    // Adiciona o código Huffman do caractere ao buffer
-    buffer += codeTable[c];
+  // Extrai as chaves (tokens) da tabela de códigos e ordena por tamanho (maior para menor)
+  std::vector<std::string> tokens;
+  for (const auto &pair : codeTable) {
+    tokens.push_back(pair.first);
+  }
+  std::sort(tokens.begin(), tokens.end(), [](const std::string &a, const std::string &b) {
+    return a.length() > b.length();
+  });
+  
+  std::string buffer; // Buffer para acumular bits
+  size_t pos = 0;
+  while (pos < file_content.length()) {
+    std::string matched_token = "";
+    // Encontra o maior token que corresponde à posição atual
+    for (const auto &token : tokens) {
+      if (file_content.substr(pos, token.length()) == token) {
+        matched_token = token;
+        break;
+      }
+    }
 
-    // Quando temos pelo menos 8 bits no buffer, escreve um byte no arquivo
+    if (!matched_token.empty()) {
+      // Se um token foi encontrado, codifica o token
+      buffer += codeTable.at(matched_token);
+      std::cout << "codificando " << matched_token <<  " para " << codeTable.at(matched_token) << std::endl;
+      pos += matched_token.length();
+    } else {
+      // Se nenhum token corresponde, codifica um único caractere
+      std::string single_char(1, file_content[pos]);
+      if (codeTable.count(single_char)) {
+        buffer += codeTable.at(single_char);
+        std::cout << "codificando " << single_char <<  " para " << codeTable.at(single_char) << std::endl;
+      } else {
+        std::cout << "olha um enter aqui gente " << std::endl;
+      }
+      pos++;
+    }
+
+    // Escreve bytes completos no arquivo de saída
     while (buffer.size() >= 8) {
       std::bitset<8> bits(buffer.substr(0, 8));
       buffer.erase(0, 8);
@@ -119,17 +90,17 @@ void Compressor::compress(const std::string &inputFile,
     }
   }
 
-  // Processa bits restantes no buffer (último byte incompleto)
+  // Codifica o símbolo de fim de arquivo (EOF)
+  buffer += codeTable.at("EOF");
+
+  // Processa bits restantes no buffer
   if (not buffer.empty()) {
-    // Completa com zeros à direita para formar um byte completo
-    while (buffer.size() < 8)
-      buffer += '0';
+    buffer.resize(8, '0'); // Garante que o buffer tenha 8 bits
     std::bitset<8> bits(buffer);
     out.put(static_cast<unsigned char>(bits.to_ulong()));
   }
 
-  // Fecha os arquivos
-  in.close();
+  // Fecha o arquivo de saída
   out.close();
 
   std::cout << "Compressão concluída. Saída: " << outputFile << std::endl;

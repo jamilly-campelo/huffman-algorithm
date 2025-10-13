@@ -19,7 +19,7 @@
  * (contendo referências para subárvores esquerda e direita).
  */
 struct HuffmanNode {
-  char symbol; ///< Caractere armazenado no nó (apenas para folhas)
+  std::string symbol; ///< Caractere armazenado no nó (apenas para folhas)
   int freq;    ///< Frequência do caractere ou soma das frequências dos filhos
   std::shared_ptr<HuffmanNode> left;  ///< Ponteiro para o filho esquerdo
   std::shared_ptr<HuffmanNode> right; ///< Ponteiro para o filho direito
@@ -32,7 +32,7 @@ struct HuffmanNode {
    * @param s Caractere a ser armazenado no nó
    * @param f Frequência do caractere
    */
-  HuffmanNode(char s, int f)
+  HuffmanNode(std::string s, int f)
       : symbol(s), freq(f), left(nullptr), right(nullptr) {}
 
   /**
@@ -45,7 +45,7 @@ struct HuffmanNode {
    * @param r Ponteiro para o nó filho direito
    */
   HuffmanNode(std::shared_ptr<HuffmanNode> l, std::shared_ptr<HuffmanNode> r)
-      : symbol(0), freq(l->freq + r->freq), left(l), right(r) {}
+      : symbol(""), freq(l->freq + r->freq), left(l), right(r) {}
 
   /**
    * @brief Verifica se o nó é uma folha
@@ -95,16 +95,39 @@ public:
    *
    * @param freq Mapa não ordenado contendo caracteres e suas frequências
    */
-  HuffmanTree(const std::unordered_map<std::string, int> &freq);
+  HuffmanTree(const std::string &tablePath);
 
   /**
    * @brief Retorna a tabela de codificação gerada pela árvore
    *
-   * @return std::unordered_map<char, std::string> Tabela que mapeia cada
+   * @return std::unordered_map<std::string, std::string> Tabela que mapeia cada
    *         caractere para seu código binário correspondente
    *
    * @note Os códigos são strings contendo apenas '0' e '1'
    * @note Caracteres não presentes na árvore não estarão na tabela
    */
   std::unordered_map<std::string, std::string> getCodeTable() const;
+
+  /**
+   * @brief Retorna a raiz da árvore de Huffman
+   *
+   * @return std::shared_ptr<HuffmanNode> Ponteiro para o nó raiz
+   */
+  std::shared_ptr<HuffmanNode> getRoot() const;
+
+   /**
+   * @brief Carrega uma tabela de frequências a partir de um arquivo de texto
+   *
+   * O arquivo deve seguir o formato:
+   * - Uma entrada por linha no formato "caractere:frequência"
+   * - Linhas começando com '#' são tratadas como comentários
+   * - Linhas vazias são ignoradas
+   * - Caracteres especiais devem ser escapados adequadamente
+   *
+   * @param tablePath Caminho para o arquivo contendo a tabela de frequências
+   * @return std::unordered_map<char, int> Mapa contendo os caracteres e suas
+   * respectivas frequências
+   */
+  std::unordered_map<std::string, int>
+  loadFrequencyTable(const std::string &tablePath);
 };

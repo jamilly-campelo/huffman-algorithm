@@ -52,6 +52,9 @@ std::unordered_map<std::string, int> create_unordered_map_from_file(std::string 
     std::string line;
 
     while (std::getline(file, line)) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
         un_map.insert({line, 0});
     }
 
@@ -62,8 +65,8 @@ std::vector<std::string> line_parser(const std::string str) {
     std::vector<std::string> tks;
     int idx = 0;
 
-    for (int i = 0; i < str.size(); i++) {
-        if (str[i] == ' ' || i == str.size() - 1) {
+    for (int i = 0; i < (int) str.size(); i++) {
+        if (str[i] == ' ' || i == (int) str.size() - 1) {
             std::string tk;
             
             if (str[i] == ' ') {
@@ -98,13 +101,16 @@ void count_frequencies_in_file(const std::string path, std::unordered_map<std::s
     std::string line;
 
     while (std::getline(file, line)) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
         std::vector<std::string> tks = line_parser(line);
-
+        tks.push_back("\n");
         for (auto tk : tks) {
             if (chars_map.find(tk) != chars_map.end()) {
                 chars_map[tk]++;
             } else {
-                for (int i = 0; i < tk.length(); i++) {
+                for (int i = 0; i < (int) tk.length(); i++) {
                     std::string comparison = contains_keyword(i, tk, keywords_map);
 
                     if (comparison != "") {

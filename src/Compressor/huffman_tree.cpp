@@ -49,7 +49,8 @@ struct NodeCompare {
  * Para frequências: {'a': 5, 'b': 9, 'c': 12, 'd': 13, 'e': 16, 'f': 45}
  * A árvore será construída combinando os nós de menor frequência primeiro
  */
-HuffmanTree::HuffmanTree(const std::unordered_map<std::string, int> &freq) {
+HuffmanTree::HuffmanTree(const std::string &tablePath) {
+  const std::unordered_map<std::string, int> freq = loadFrequencyTable(tablePath);
   // Fila de prioridade (min-heap) para construir a árvore de Huffman
   std::priority_queue<std::shared_ptr<HuffmanNode>,
                       std::vector<std::shared_ptr<HuffmanNode>>, NodeCompare>
@@ -131,4 +132,63 @@ void HuffmanTree::buildCodes(std::shared_ptr<HuffmanNode> node,
  */
 std::unordered_map<std::string, std::string> HuffmanTree::getCodeTable() const {
   return codeTable;
+}
+
+std::shared_ptr<HuffmanNode> HuffmanTree::getRoot() const { return root; }
+
+/**
+ * @brief Carrega uma tabela de frequências a partir de um arquivo
+ *
+ * O arquivo deve estar no formato "caractere:frequência" com uma entrada por
+ * linha. Linhas vazias são ignoradas.
+ *
+ * @param tablePath Caminho para o arquivo contendo a tabela de frequências
+ * @return std::unordered_map<std::string, int> Mapa com os símbolos e suas
+ * frequências
+ * @throws std::runtime_error Se não for possível abrir o arquivo da tabela
+ */
+std::unordered_map<std::string, int>
+HuffmanTree::loadFrequencyTable(const std::string &tablePath) {
+  std::unordered_map<std::string, int> freq;
+  std::ifstream tableFile(tablePath);
+
+  // Verifica se o arquivo foi aberto com sucesso
+  if (!tableFile.is_open()) {
+    throw std::runtime_error("Erro ao abrir tabela: " + tablePath);
+  }
+
+  std::string line;
+  // Processa cada linha do arquivo
+  while (std::getline(tableFile, line)) {
+    // Ignora linhas vazias
+    if (line.empty()) continue;
+
+    size_t sep;
+    // Encontra o separador ':' entre caractere e frequência
+    for (int i = line.size() - 1; i >= 0; i--) {
+      if (line[i] == ':') {
+        sep = i;
+        break;
+      }
+    }
+
+    // Divide a linha em símbolo e frequência
+    std::string symbolStr = line.substr(0, sep);
+    std::string freqStr = line.substr(sep + 1);
+
+    // Converte e armazena os valores
+    int count = std::stoi(freqStr);
+    if(symbolStr.empty()) {
+      freq["\n"] = count;
+    } else {
+      freq[symbolStr] = count;
+    }
+  }
+
+  tableFile.close();
+
+  // Adiciona um símbolo de fim de arquivo (EOF) para lidar com o padding
+  freq["EOF"] = 1;
+
+  return freq;
 }

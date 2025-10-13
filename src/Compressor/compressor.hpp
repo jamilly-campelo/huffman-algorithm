@@ -5,7 +5,6 @@
  */
 
 #pragma once
-#include "huffman_tree.hpp"
 #include <fstream>
 #include <iostream>
 #include <queue>
@@ -49,21 +48,4 @@ public:
    */
   void compress(const std::string &inputFile, const std::string &outputFile,
                 const std::string &tablePath = "");
-
-private:
-  /**
-   * @brief Carrega uma tabela de frequências a partir de um arquivo de texto
-   *
-   * O arquivo deve seguir o formato:
-   * - Uma entrada por linha no formato "caractere:frequência"
-   * - Linhas começando com '#' são tratadas como comentários
-   * - Linhas vazias são ignoradas
-   * - Caracteres especiais devem ser escapados adequadamente
-   *
-   * @param tablePath Caminho para o arquivo contendo a tabela de frequências
-   * @return std::unordered_map<char, int> Mapa contendo os caracteres e suas
-   * respectivas frequências
-   */
-  std::unordered_map<std::string, int>
-  loadFrequencyTable(const std::string &tablePath);
 };

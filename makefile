@@ -1,48 +1,53 @@
 # ==============================================================================
-# Makefile para Compressor Huffman (localização flexível)
+# Makefile para Compressor Huffman e Tabela de Frequência
 # ==============================================================================
 
 # Variáveis
 CXX := g++
-TARGET := compressor
 CXXFLAGS := -std=c++17 -Wall -Wextra -g
-
-# Detecta automaticamente onde estão os arquivos
-COMPRESSOR_DIR := $(shell find . -name "compressor.cpp" -type f | head -1 | xargs dirname)
-ifeq ($(COMPRESSOR_DIR),)
-    $(error Não encontrei a pasta do Compressor. Certifique-se de que compressor.cpp existe)
-endif
 
 OBJS_DIR := obj
 BIN_DIR := bin
 
-# Arquivos fonte
-SRCS := $(COMPRESSOR_DIR)/main.cpp \
-        $(COMPRESSOR_DIR)/compressor.cpp \
-        $(COMPRESSOR_DIR)/huffman_tree.cpp
+# --- Alvos ---
+COMPRESSOR_EXEC := $(BIN_DIR)/compressor
+FREQ_TABLE_EXEC := $(BIN_DIR)/freq-table
 
-OBJS := $(patsubst $(COMPRESSOR_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRCS))
+# --- Fontes e Objetos ---
+COMPRESSOR_SRCS := $(wildcard src/Compressor/*.cpp)
+COMPRESSOR_OBJS := $(patsubst src/%.cpp,$(OBJS_DIR)/%.o,$(COMPRESSOR_SRCS))
 
-.PHONY: all
-all: $(BIN_DIR)/$(TARGET)
+FREQ_TABLE_SRCS := $(wildcard src/Tabela/*.cpp)
+FREQ_TABLE_OBJS := $(patsubst src/%.cpp,$(OBJS_DIR)/%.o,$(FREQ_TABLE_SRCS))
 
-$(BIN_DIR)/$(TARGET): $(OBJS)
+.PHONY: all clean rebuild
+
+all: $(COMPRESSOR_EXEC) $(FREQ_TABLE_EXEC)
+
+# --- Regras de Ligação ---
+$(COMPRESSOR_EXEC): $(COMPRESSOR_OBJS)
 	@mkdir -p $(BIN_DIR)
-	@echo "🔗 Ligando o executável..."
+	@echo "🔗 Ligando o executável do compressor..."
 	$(CXX) $(CXXFLAGS) -o $@ $^
-	@echo "✅ Executável '$(TARGET)' criado!"
-	@echo "Arquivos compilados de: $(COMPRESSOR_DIR)"
-	@echo "Uso: ./$(BIN_DIR)/$(TARGET) <tabela> <entrada> <saída>"
+	@echo "✅ Executável 'compressor' criado em $(BIN_DIR)!"
+	@echo "Uso: ./$(COMPRESSOR_EXEC) <tabela> <entrada> <saída>"
 
-$(OBJS_DIR)/%.o: $(COMPRESSOR_DIR)/%.cpp
+$(FREQ_TABLE_EXEC): $(FREQ_TABLE_OBJS)
+	@mkdir -p $(BIN_DIR)
+	@echo "🔗 Ligando o executável da tabela de frequência..."
+	$(CXX) $(CXXFLAGS) -o $@ $^
+	@echo "✅ Executável 'freq-table' criado em $(BIN_DIR)!"
+	@echo "Uso: ./$(FREQ_TABLE_EXEC) <entrada> <saída>"
+
+# --- Regra de Compilação Genérica ---
+$(OBJS_DIR)/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	@echo "🔨 Compilando $<..."
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-.PHONY: clean
+# --- Comandos Utilitários ---
 clean:
 	rm -rf $(OBJS_DIR) $(BIN_DIR)
-	@echo "Limpeza concluída."
+	@echo "🧹 Limpeza concluída."
 
-.PHONY: rebuild
 rebuild: clean all

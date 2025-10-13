@@ -5,6 +5,7 @@
  */
 
 #include "compressor.hpp"
+#include "descompressor.hpp"
 #include <iostream>
 
 /**
@@ -24,38 +25,38 @@
  *
  * @throws std::exception Propaga exceções da classe Compressor
  */
+
+void usage(char *argv[]) {
+  std::cerr << "Uso:\n"
+            << "  " << argv[0]
+            << " <tabela_frequencia> <arquivo_entrada> <arquivo_saida> [-d : descomprimir]\n";
+  std::exit(1);
+}
+
+ 
 int main(int argc, char *argv[]) {
   try {
     // Verifica número mínimo de argumentos
-    if (argc < 3) {
-      std::cerr << "Uso:\n"
-                << "  " << argv[0]
-                << " <arquivo_entrada> <arquivo_saida>\n" // caso n implementado
-                << "  ou\n"
-                << "  " << argv[0]
-                << " <tabela_frequencia> <arquivo_entrada> <arquivo_saida>\n";
-      return 1;
+    if (argc < 4) {
+      usage(argv);
     }
 
-    Compressor compressor;
-
-    // Caso com tabela de frequências externa
-    if (argc == 4) {
-      std::string tablePath = argv[1];
-      std::string inputFile = argv[2];
-      std::string outputFile = argv[3];
-
+    std::string tablePath = argv[1];
+    std::string inputFile = argv[2];
+    std::string outputFile = argv[3];
+  
+    if(argc == 4) { 
+      Compressor compressor;
       std::cout << "Compressão com tabela externa: " << tablePath << std::endl;
       compressor.compress(inputFile, outputFile, tablePath);
-    }
-    // Caso sem tabela - geração automática de frequências
-    else if (argc == 3) {
-      std::string inputFile = argv[1];
-      std::string outputFile = argv[2];
-
-      std::cout
-          << "Compressão automática (gerando tabela)...\n"; // n implementado
-      compressor.compress(inputFile, outputFile);
+    } else {
+      std::string flag = argv[4];
+      if(flag != "-d") {
+        usage(argv);
+      }
+      Descompressor descompressor;
+      std::cout << "Descomprimindo ";
+      descompressor.decompress(inputFile, outputFile, tablePath);
     }
 
   } catch (const std::exception &e) {
