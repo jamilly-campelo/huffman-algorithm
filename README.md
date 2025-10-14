@@ -149,7 +149,20 @@ Below is a theoretical/simulated table — plausible, unmeasured values. I inclu
 
 - To get real compression metrics:
 
+        ls -la file_name.cpp file_name_compress
 
+        original=$(stat -c%s "file_name.cpp")
+        compress=$(stat -c%s "file_name_compress")
+        taxa=$(echo "scale=2; (1 - $compress/$original) * 100" | bc)
+        echo "Taxa of compress: $taxa%"
+
+    
+   #### Exemple of exit 
+    -rw-rw-r-- 1 alomyr alomyr 3881 Oct 14 09:23 Operação_Polonesa_Com_arvore_bi.cpp
+    
+    -rw-rw-r-- 1 alomyr alomyr 2035 Oct 14 09:24 Op_polonesa_comprimida
+    
+    Taxa de compressão: 48.00%
 
 ## Authors
 
