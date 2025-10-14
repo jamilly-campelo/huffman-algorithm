@@ -73,6 +73,84 @@ make rebuild
 
 - `outputs/frequency-table.txt`: Generated frequency table.
 
+## Technical Analysis
+
+### System Architecture
+
+- The project is organized into specialized modules:
+file_reader.hpp: Utilities for reading files and loading frequency tables
+huffman_tree.hpp/cpp: Huffman tree implementation with bottom-up construction using min-heap
+compressor.cpp: File encoding using Huffman code tables
+decompressor.hpp: Interface for decompression based on tree traversal.
+
+## Asymptotic Complexity (Time and Space)
+
+### notations:
+
+    n = number of symbols in the input file (e.g., number of characters).
+    k = number of distinct symbols present in the frequency table (vocabulary size/distinct tokens).
+    L = maximum length (in characters) of any multi-character symbol in the codeTable (e.g., keyword return → L ~ 6).
+    b = total number of bits in the encoded file (≈ sum over symbols of freq(symbol) * code_length(symbol)).
+
+### HuffmanTree::loadFrequencyTable(tablePath)
+
+- Read table file: loop through each row → O(m) where m is the number of rows (≈ k).
+- Stoi conversions, etc.: linear cost PER row (small).
+- Time: O(k)
+- Space: O(k) memory for the unordered_map.
+- Tree construction (HuffmanTree::HuffmanTree)
+- Insert k nodes into the heap: k push → O(k log k).
+- While pq.size() > 1: make k-1 combinations; each combination involves 2 pops + 1 push → O(log k) each → O(k log k) total.
+- Time: O(k log k)
+- Space: O(k) for nodes.
+
+### Code table generation (DFS traversal of the tree)
+
+- Visits each node once (nodes ~ 2k - 1): O(k) to generate all codes (total code length proportional to k * avg_code_len).
+- Time: O(k) (more precisely O(k + total_code_length))
+- Space: O(k).
+
+### Compressor (Compressor::compress)
+
+- File reading: O(n) to load all content into memory.
+- Symbol-to-code mapping: depends on how the symbol search is performed:
+- If the algorithm tries substrings of length up to L at position pos (for example, it tries content.substr(pos, l) for l = L..1), 
+then the cost is O(n * L * cost_lookup). With unordered_map, the lookup is on average O(1), so O(n * L).
+- If the implementation tests only one character at a time and uses multi-character symbols only if found, the cost is O(n).
+- From what was submitted, it appears that the compressor attempts substring matching (to support multi-character tokens). Therefore, Time ≈ O(n * L).
+
+- Conversion to bytes (buffer handle): adding bits and writing bytes is O(b/8) ≈ O(b).
+Approximate total time: O(n * L + b). Since b is O(n * avg_code_len) — typically avg_code_len is a constant linked to entropy — the dominant term tends to be O(n * L).
+
+- Space: keeping content in memory → O(n) + codeTable structures O(k).
+
+- Note: if L is small (short keywords) and n is large, the practical complexity is almost linear O(n). However, the naive substring search can be replaced by a trie/prefix-tree that allows for more efficient O(n * max_symbol_length?) and avoids multiple substrs for repeated substrings.
+
+### Decompressor (Decompressor::decompress) — (expected)
+
+- Iterates through the file's bits: for each bit, it takes one step in the tree (left/right). Each decoded symbol requires code_length(symbol) steps.
+- Decoding: O(b × h) - b bits, h tree height
+
+- Time: O(b) = O(n * avg_code_len) — linear in the number of bits.
+
+- Space: O(k) for the tree; can stream decode (does not need the entire file in memory) → O(1) plus the tree and read buffer.
+
+## Theoretical Compression Ratio Comparison
+
+How we calculated the ratio:
+ratio = 1 - (compressed_size / original_size)
+Below is a theoretical/simulated table — plausible, unmeasured values. I include examples of three file types: small code file (main.cpp), medium code project (hypothetical project_src.tar), and large text (text.txt). These numbers are illustrative for the report. At the end of the report, I show how to measure it in practice and how to populate the actual table.
+
+| File (exemple)                     | Original (KB) | Huffman (est.) (KB) | ZIP (est.) | GZIP (est.) | 7z (est.) | Better |
+| ------------------------------------- | ------------: | ------------------: | ---------: | ----------: | --------: | ------ |
+| `main.cpp` (code)                   |            12 |       8  → taxa 33% |   7  → 42% |   6.5 → 46% |   6 → 50% | 7z     |
+
+## How to Measure Real Performance
+
+- To get real compression metrics:
+
+
+
 ## Authors
 
 - Jamilly Emilly da Silva Campelo
