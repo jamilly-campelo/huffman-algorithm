@@ -1,3 +1,3 @@
-./bin/freq-table $1
-./bin/compressor outputs/frequency-table.txt teste.cpp teste_comprimido.jcb
-./bin/compressor outputs/frequency-table.txt teste_comprimido.jcb teste_descomprimido.cpp -d
+./bin/freq-table $1 $2
+./bin/sempress $2 $1 teste_comprimido.jcb
+./bin/sempress $2 teste_comprimido.jcb teste_descomprimido.cpp -d
