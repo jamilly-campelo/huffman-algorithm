@@ -42,6 +42,36 @@ Compresses and decompresses files using the Huffman algorithm.
 - `<input>`: Input file to compress or decompress.
 - `<output>`: Output file path.
 
+## Example Usage
+
+### 1. Generating a Frequency Table
+```bash
+# Generate table from a single file
+./bin/freq-table source.cpp table.freq
+
+# Generate table from multiple files in a directory
+./bin/freq-table src/sempress/ table.freq
+
+# Using default output path
+./bin/freq-table source.cpp
+# Creates outputs/frequency-table.txt
+```
+
+### 2. Compressing Files
+```bash
+# Basic compression
+./bin/sempress table.freq input.cpp compressed.jcb
+
+# Using the default frequency table
+./bin/sempress outputs/frequency-table.txt source.cpp output.jcb
+```
+
+### 3. Decompressing Files
+```bash
+# Basic decompression (adds -d flag)
+./bin/sempress table.freq compressed.jcb decompressed.cpp -d
+```
+
 ## Building the Project
 
 To compile the project, run:
@@ -77,11 +107,11 @@ make rebuild
 
 ### System Architecture
 
-- The project is organized into specialized modules:
-file_reader.hpp: Utilities for reading files and loading frequency tables
-huffman_tree.hpp/cpp: Huffman tree implementation with bottom-up construction using min-heap
-compressor.cpp: File encoding using Huffman code tables
-decompressor.hpp: Interface for decompression based on tree traversal.
+The project is organized into specialized modules:
+- file_reader.hpp: Utilities for reading files and loading frequency tables
+- huffman_tree.hpp/cpp: Huffman tree implementation - with bottom-up construction using min-heap
+- compressor.cpp: File encoding using Huffman code tables
+- decompressor.hpp: Interface for decompression based on tree traversal.
 
 ## Asymptotic Complexity (Time and Space)
 
@@ -112,21 +142,32 @@ decompressor.hpp: Interface for decompression based on tree traversal.
 
 ### Compressor (Compressor::compress)
 
-- File reading: O(n) to load all content into memory.
-- Symbol-to-code mapping: depends on how the symbol search is performed:
-- If the algorithm tries substrings of length up to L at position pos (for example, it tries content.substr(pos, l) for l = L..1), 
-then the cost is O(n * L * cost_lookup). With unordered_map, the lookup is on average O(1), so O(n * L).
-- If the implementation tests only one character at a time and uses multi-character symbols only if found, the cost is O(n).
-- From what was submitted, it appears that the compressor attempts substring matching (to support multi-character tokens). Therefore, Time ≈ O(n * L).
+The compression process consists of:
 
-- Conversion to bytes (buffer handle): adding bits and writing bytes is O(b/8) ≈ O(b).
-Approximate total time: O(n * L + b). Since b is O(n * avg_code_len) — typically avg_code_len is a constant linked to entropy — the dominant term tends to be O(n * L).
+1. **File Reading**: O(n) - Reads the input file character by character into a string
+   - Uses std::ifstream to read the input file
+   - Space complexity: O(n) for storing the file content in memory
 
-- Space: keeping content in memory → O(n) + codeTable structures O(k).
+2. **Compression Logic**: O(n)
+   - Iterates through the input string once
+   - For each character/keyword:
+     - Looks up the corresponding Huffman code in the codeTable (O(1) average with unordered_map)
+     - Writes the code bits to an output buffer
+   - No substring matching is performed - tokens are looked up exactly as they appear in the frequency table
 
-- Note: if L is small (short keywords) and n is large, the practical complexity is almost linear O(n). However, the naive substring search can be replaced by a trie/prefix-tree that allows for more efficient O(n * max_symbol_length?) and avoids multiple substrs for repeated substrings.
+3. **Bit Buffer Management**: O(b)
+   - Accumulates bits in a buffer
+   - Writes full bytes (8 bits) to the output file
+   - Handles padding of the final byte if needed
 
-### Decompressor (Decompressor::decompress) — (expected)
+Total Time Complexity: O(n + b)
+
+Total Space Complexity: 
+- O(n) for input file content
+- O(k) for code table where k is number of symbols
+- O(1) for bit buffer
+
+### Decompressor (Decompressor::decompress)
 
 - Iterates through the file's bits: for each bit, it takes one step in the tree (left/right). Each decoded symbol requires code_length(symbol) steps.
 - Decoding: O(b × h) - b bits, h tree height
@@ -137,8 +178,7 @@ Approximate total time: O(n * L + b). Since b is O(n * avg_code_len) — typical
 
 ## Theoretical Compression Ratio Comparison
 
-How we calculated the ratio:
-ratio = 1 - (compressed_size / original_size)
+How we calculated the ratio: ratio = 1 - (compressed_size / original_size)
 Below is a theoretical/simulated table — plausible, values.
 The following data was obtained from the compression of a real C++ source file using our implementation.
 
