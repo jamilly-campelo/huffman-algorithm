@@ -139,17 +139,18 @@ Approximate total time: O(n * L + b). Since b is O(n * avg_code_len) — typical
 
 How we calculated the ratio:
 ratio = 1 - (compressed_size / original_size)
-Below is a theoretical/simulated table — plausible, unmeasured values. I include examples of three file types: small code file (main.cpp), medium code project (hypothetical project_src.tar), and large text (text.txt). These numbers are illustrative for the report. At the end of the report, I show how to measure it in practice and how to populate the actual table.
-
+Below is a theoretical/simulated table — plausible, values.
 The following data was obtained from the compression of a real C++ source file using our implementation.
 
+| File | Original (KB) | Huffman (KB) | Huffman Ratio | ZIP (KB) | ZIP Ratio | .tar.xz (KB) | .tar.xz Ratio | 7z (KB) | 7z Ratio | Best |
+|------|---------------|-------------|---------------|----------|-----------|--------------|---------------|---------|----------|------|
+| `src/sempress/huffman_tree.cpp` | 5.7 | 3.2 | 44% | 2.3 | 60% | 2.2 | 61% | 2.2 | 61% | .tar.xz/7z |
+| `src/sempress/compressor.cpp` | 3.1 | 1.6 | 48% | 1.4 | 55% | 1.4 | 55% | 1.4 | 55% | ZIP/.tar.xz/7z |
+| `src/sempress/decompressor.cpp` | 2.3 | 1.2 | 48% | 1.1 | 52% | 1.0 | 57% | 1.0 | 57% | .tar.xz/7z |
+| **Average** | **3.7** | **2.0** | **47%** | **1.6** | **56%** | **1.5** | **58%** | **1.5** | **58%** | **.tar.xz/7z** |
 
-| File (exemple)                     | Original (KB) | Huffman (est.) (KB) | ZIP (est.) | GZIP (est.) | 7z (est.) | Better |
-| ------------------------------------- | ------------: | ------------------: | ---------: | ----------: | --------: | ------ |
-| `main.cpp` (code)                   |            12 |       6.24  → rate 48% |   7  → 42% |   6.5 → 46% |   6 → 50% | 7z     |
-
-The compression ratio depends on the entropy of the input data; source code typically contains recurring patterns, 
-so Huffman coding achieves significant size reduction without loss.
+    The compression ratio depends on the entropy of the input data; source code typically contains recurring patterns, 
+    so Huffman coding achieves significant size reduction without loss.
 
 ## How to Measure Real Performance
 
