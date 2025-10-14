@@ -143,7 +143,7 @@ Below is a theoretical/simulated table — plausible, unmeasured values. I inclu
 
 | File (exemple)                     | Original (KB) | Huffman (est.) (KB) | ZIP (est.) | GZIP (est.) | 7z (est.) | Better |
 | ------------------------------------- | ------------: | ------------------: | ---------: | ----------: | --------: | ------ |
-| `main.cpp` (code)                   |            12 |       8  → taxa 33% |   7  → 42% |   6.5 → 46% |   6 → 50% | 7z     |
+| `main.cpp` (code)                   |            12 |       6,24  → rate 48% |   7  → 42% |   6.5 → 46% |   6 → 50% | 7z     |
 
 ## How to Measure Real Performance
 
@@ -153,8 +153,8 @@ Below is a theoretical/simulated table — plausible, unmeasured values. I inclu
 
         original=$(stat -c%s "file_name.cpp")
         compress=$(stat -c%s "file_name_compress")
-        taxa=$(echo "scale=2; (1 - $compress/$original) * 100" | bc)
-        echo "Taxa of compress: $taxa%"
+        rate=$(echo "scale=2; (1 - $compress/$original) * 100" | bc)
+        echo "rate of compress: $rate%"
 
     
    #### Exemple of exit 
@@ -162,7 +162,7 @@ Below is a theoretical/simulated table — plausible, unmeasured values. I inclu
     
     -rw-rw-r-- 1 alomyr alomyr 2035 Oct 14 09:24 Op_polonesa_comprimida
     
-    Taxa de compressão: 48.00%
+    Rate of compress: 48.00%
 
 ## Authors
 
