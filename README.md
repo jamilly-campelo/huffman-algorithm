@@ -154,10 +154,6 @@ The following data was obtained from the compression of a real C++ source file u
 
 ## How to Measure Real Performance
 
-- To get real compression metrics:
-
-## How to Measure Real Performance
-
 ### Step-by-step measurement:
 
 ```bash
