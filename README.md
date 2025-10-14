@@ -195,9 +195,9 @@ diff file_name.cpp decompressed_file.cpp
     | `Operação_Polonesa_Com_arvore_bi.cpp` | 3881 bytes | 2035 bytes | 48.00% |
 
 ### Theoretical Comparison with Other Tools:
-    | File Type | Huffman | ZIP | GZIP | 7z | Best |
+    | File Type | Huffman | ZIP | .TAR.XZ | 7z | Best |
     |-----------|---------|-----|------|----|------|
-    | C++ Code | 48% | 43% | 46% | 50% | 7z |
+    | C++ Code | 45% | 48% | 46% | 50% | 7z |
 
 ## Authors
 
